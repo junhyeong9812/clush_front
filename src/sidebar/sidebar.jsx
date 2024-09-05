@@ -101,7 +101,7 @@ const Sidebar = () => {
             icon={<CheckSquareOutlined />}
             style={{ color: theme.token.colorTextBase }} // 텍스트 색상 적용
           >
-            <Link to="/User" style={{ color: theme.token.colorTextBase }}>
+            <Link to="/TodoBoard" style={{ color: theme.token.colorTextBase }}>
               ToDO
             </Link>
           </Menu.Item>
