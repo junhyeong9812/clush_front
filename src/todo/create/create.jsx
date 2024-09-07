@@ -9,10 +9,6 @@ export const TasksCreatePage = () => {
   const { formProps, modalProps, close } = useModalForm({
     action: "create",
     defaultVisible: true,
-    // GraphQL 및 TypeScript 제거
-    meta: {
-      // gqlMutation: CREATE_TASK_MUTATION, // 제거된 GraphQL 관련 코드
-    },
   });
 
   return (

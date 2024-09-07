@@ -10,21 +10,27 @@ import Sidebar from "./sidebar/sidebar";
 import { ThemeProvider, useMode } from "./theme";
 import Dashboard from "./dashboard/dashboard";
 import TodoBoard from "./todo/TodoBoard";
+import { UserProvider } from "./provider/UserProvider";
+import { EventProvider } from "./provider/EventProvider";
 
 function App() {
   return (
-    <ThemeProvider>
-      <div className="App">
-        <Router>
-          <Sidebar />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/Calendar" element={<Calendar />} />
-            <Route path="/TodoBoard" element={<TodoBoard />} />
-          </Routes>
-        </Router>
-      </div>
-    </ThemeProvider>
+    <UserProvider>
+      <EventProvider>
+        <ThemeProvider>
+          <div className="App">
+            <Router>
+              <Sidebar />
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/Calendar" element={<Calendar />} />
+                <Route path="/TodoBoard" element={<TodoBoard />} />
+              </Routes>
+            </Router>
+          </div>
+        </ThemeProvider>
+      </EventProvider>
+    </UserProvider>
   );
 }
 
