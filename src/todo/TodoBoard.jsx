@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   DndContext,
   MouseSensor,
@@ -14,9 +14,17 @@ import { TodoCard } from "./TodoCard";
 import { useMode } from "../theme"; // 테마 가져오기
 import { ConfigProvider } from "antd";
 import TaskEditModal from "./edit/Modal";
+import { ToDoContext } from "../provider/todoProvider";
 
 const TodoBoard = () => {
   const { theme } = useMode(); // 테마 가져오기
+  const {
+    todos = [], // 할 일 목록
+    updateTodo, // 할 일 수정
+    addTodo, // 할 일 추가
+    deleteTodo, // 할 일 삭제
+  } = useContext(ToDoContext); // 프로바이더에서 상태 관리 함수 사용
+
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: { distance: 5 },
   });
@@ -25,59 +33,37 @@ const TodoBoard = () => {
   });
   const sensors = useSensors(mouseSensor, touchSensor);
 
-  const [tasks, setTasks] = useState([
-    {
-      id: "1",
-      title: "Task 1",
-      description: "This is task 1",
-      status: "todo",
-      dueDate: "2024-09-01",
-    },
-    {
-      id: "2",
-      title: "Task 2",
-      description: "This is task 2",
-      status: "inProgress",
-      dueDate: "2024-09-02",
-    },
-    {
-      id: "3",
-      title: "Task 3",
-      description: "This is task 3",
-      status: "done",
-      dueDate: "2024-09-03",
-    },
-  ]);
-
   const [activeId, setActiveId] = useState(null); // 현재 드래그 중인 아이템 ID 저장
   const [isModalVisible, setIsModalVisible] = useState(false); // 수정 모달 가시성 관리
   const [activeTask, setActiveTask] = useState(null); // 수정할 태스크 저장
 
+  // 드래그 시작 핸들러
   const handleOnDragStart = (event) => {
     setActiveId(event.active.id); // 드래그가 시작되면 아이템 ID 저장
   };
 
+  // 드래그 종료 핸들러
   const handleOnDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
 
-    const newTasks = tasks.map(
-      (task) => (task.id === active.id ? { ...task, status: over.id } : task) // 상태 업데이트
-    );
-    setTasks(newTasks);
+    const newStatus =
+      over.id === "todo"
+        ? "PENDING"
+        : over.id === "inProgress"
+        ? "IN_PROGRESS"
+        : "COMPLETED";
+
+    // 상태 업데이트는 ToDoProvider에서 처리
+    updateTodo(active.id, { status: newStatus });
+
     setActiveId(null); // 드래그가 끝나면 activeId 초기화
   };
 
-  // 카드 추가 버튼 클릭 시 모달을 띄움
+  // 카드 추가 버튼 클릭 시
   const handleAddCard = (status) => {
-    const newTask = {
-      id: `${tasks.length + 1}`,
-      title: `New Task`,
-      description: `New task description`,
-      status,
-      dueDate: "2024-09-10",
-    };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+    setActiveTask({ title: "", description: "", status }); // 새로운 태스크에 컬럼의 status를 설정
+    setIsModalVisible(true); // 모달 보이기
   };
 
   // 아이템을 클릭하면 수정 모달을 띄움
@@ -87,10 +73,17 @@ const TodoBoard = () => {
   };
 
   const handleModalSave = (updatedTask) => {
-    const updatedTasks = tasks.map((task) =>
-      task.id === activeTask.id ? { ...task, ...updatedTask } : task
-    );
-    setTasks(updatedTasks); // 태스크 업데이트
+    if (activeTask.id) {
+      // 수정 모드
+      updateTodo(activeTask.id, updatedTask); // 수정된 태스크 저장
+    } else {
+      // 추가 모드
+      addTodo(updatedTask.title, updatedTask.description); // 새 태스크 추가
+    }
+    setIsModalVisible(false); // 모달 닫기
+  };
+  const handleDeleteTask = (taskId) => {
+    deleteTodo(taskId); // 할 일 삭제
     setIsModalVisible(false); // 모달 닫기
   };
 
@@ -99,7 +92,7 @@ const TodoBoard = () => {
   };
 
   // 현재 드래그 중인 태스크를 찾기
-  const activeDraggedTask = tasks.find((task) => task.id === activeId);
+  const activeDraggedTask = todos.find((task) => task.id === activeId);
 
   return (
     <ConfigProvider theme={theme}>
@@ -113,11 +106,11 @@ const TodoBoard = () => {
           <TodoColumn
             id="todo"
             title="To Do"
-            tasks={tasks}
+            tasks={todos}
             onAddCard={handleAddCard}
           >
-            {tasks
-              .filter((task) => task.status === "todo")
+            {todos
+              .filter((task) => task.status === "PENDING")
               .map((task) => (
                 <TodoItem
                   key={task.id}
@@ -133,11 +126,11 @@ const TodoBoard = () => {
           <TodoColumn
             id="inProgress"
             title="In Progress"
-            tasks={tasks}
+            tasks={todos}
             onAddCard={handleAddCard}
           >
-            {tasks
-              .filter((task) => task.status === "inProgress")
+            {todos
+              .filter((task) => task.status === "IN_PROGRESS")
               .map((task) => (
                 <TodoItem
                   key={task.id}
@@ -153,11 +146,11 @@ const TodoBoard = () => {
           <TodoColumn
             id="done"
             title="Done"
-            tasks={tasks}
+            tasks={todos}
             onAddCard={handleAddCard}
           >
-            {tasks
-              .filter((task) => task.status === "done")
+            {todos
+              .filter((task) => task.status === "COMPLETED")
               .map((task) => (
                 <TodoItem
                   key={task.id}
@@ -181,6 +174,7 @@ const TodoBoard = () => {
           task={activeTask}
           onCancel={handleModalCancel}
           onSave={handleModalSave}
+          onDelete={handleDeleteTask} // 삭제 핸들러 추가
         />
       </TodoBoardContainer>
     </ConfigProvider>

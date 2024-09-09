@@ -13,6 +13,7 @@ const dummyUsers = [
 
 export const UserProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // 유저 데이터 가져오기 (API or Dummy)
   const fetchUsers = async () => {
@@ -21,13 +22,28 @@ export const UserProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+        setSelectedUser(data[0]?.id || null); // 기본 유저 선택
+        setUserIdInCookie(data[0]?.id || null); // 쿠키에 기본 유저 저장
       } else {
         throw new Error("Failed to fetch users");
       }
     } catch (error) {
       console.error("API error, using dummy users", error);
-      setUsers(dummyUsers); // API 실패 시 더미 데이터 사용
+      setUsers(dummyUsers);
+      setSelectedUser(dummyUsers[0]?.id || null);
+      setUserIdInCookie(dummyUsers[0]?.id || null);
     }
+  };
+
+  // 쿠키 설정 함수
+  const setUserIdInCookie = (userId) => {
+    document.cookie = `userId=${userId}; path=/; max-age=1800`;
+  };
+
+  // 유저 선택 시 쿠키에 저장
+  const handleUserSelect = (userId) => {
+    setSelectedUser(userId);
+    setUserIdInCookie(userId);
   };
 
   useEffect(() => {
@@ -35,6 +51,10 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ users }}>{children}</UserContext.Provider>
+    <UserContext.Provider
+      value={{ users, selectedUser, handleUserSelect, fetchUsers }}
+    >
+      {children}
+    </UserContext.Provider>
   );
 };

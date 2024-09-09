@@ -1,24 +1,42 @@
-import { useState } from "react";
-import { Layout, Menu, Avatar, Button, ConfigProvider } from "antd";
+import { useState, useContext } from "react";
+import { Layout, Menu, Avatar, Button, ConfigProvider, Select } from "antd";
 import {
   HomeOutlined,
   CheckSquareOutlined,
   CalendarOutlined,
   SunOutlined,
   MoonOutlined,
+  UserAddOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { useMode } from "../theme"; // 테마 훅 가져오기
+import { UserContext } from "../provider/UserProvider"; // UserContext 가져오기
+import UserCreationModal from "./userCreationModal";
 
 const { Sider } = Layout;
+const { Option } = Select;
 
 const Sidebar = () => {
   const { theme, toggleColorMode, mode } = useMode();
+  const { users, selectedUser, handleUserSelect } = useContext(UserContext); // UserContext에서 유저 관리
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isUserModalVisible, setIsUserModalVisible] = useState(false); // 유저 생성 모달 상태
   const [selected, setSelected] = useState("Dashboard");
 
   const toggleCollapsed = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleUserChange = (value) => {
+    handleUserSelect(value); // 선택한 유저를 UserContext로 넘김
+  };
+
+  const handleUserModalOpen = () => {
+    setIsUserModalVisible(true);
+  };
+
+  const handleUserModalClose = () => {
+    setIsUserModalVisible(false);
   };
 
   return (
@@ -63,7 +81,6 @@ const Sidebar = () => {
             onClick={toggleColorMode}
             icon={mode === "dark" ? <SunOutlined /> : <MoonOutlined />} // 모드에 따른 아이콘
             style={{
-              //   fontSize: "24px",
               color: theme.token.colorTextBase, // 버튼 색상 적용
             }}
           >
@@ -74,12 +91,32 @@ const Sidebar = () => {
         {!isCollapsed && (
           <div style={{ marginBottom: "25px", textAlign: "center" }}>
             <Avatar size={100} src={`../../logo192.png`} />
-
             <div>
-              <span style={{ color: theme.token.colorTextBase }}>UserName</span>
+              {/* 유저 선택 Select 박스 */}
+              <Select
+                placeholder="Select User"
+                style={{ width: 120 }}
+                onChange={handleUserChange} // 유저 선택 이벤트 핸들러
+                value={selectedUser} // 선택한 유저 ID
+              >
+                {users.map((user) => (
+                  <Option key={user.id} value={user.id}>
+                    {user.username}
+                  </Option>
+                ))}
+              </Select>
             </div>
           </div>
         )}
+        {/* 유저 생성 버튼 */}
+        <Button
+          type="text"
+          icon={<UserAddOutlined />}
+          onClick={handleUserModalOpen}
+          style={{ color: theme.token.colorTextBase, marginBottom: "25px" }}
+        >
+          {!isCollapsed && "Create User"}
+        </Button>
 
         <Menu
           mode="inline"
@@ -115,6 +152,11 @@ const Sidebar = () => {
             </Link>
           </Menu.Item>
         </Menu>
+        {/* 유저 생성 모달 */}
+        <UserCreationModal
+          visible={isUserModalVisible}
+          onClose={handleUserModalClose}
+        />
       </Sider>
     </ConfigProvider>
   );
