@@ -1,6 +1,13 @@
 # 클러쉬 프론트엔드 (Clush Frontend)
 
 이 프로젝트는 **React.js v18** 및 **Ant Design v4** 이상을 사용하여 개발된 할 일(ToDo) 및 일정(Calendar) 관리 애플리케이션입니다. Drag & Drop 기능과 일정 공유 기능을 포함하고 있으며, 사용자는 할 일 관리 및 일정 관리를 손쉽게 할 수 있습니다.
+백엔드와 같이 구동하실 때 
+<br>
+![image](https://github.com/user-attachments/assets/c51569d3-aa58-4c4e-ba75-db50814ee42f)
+<br>
+백엔드 API를 기준으로 만들어서 더미데이터로 동작하는 게 좀 불편할 수 있습니다. 
+백엔드와 같이 동작하여 확인하는 게 좋습니다.
+createUser를 통해 유저를 생성 후 동작 테스트를 해보면 좋습니다.
 
 ## 프로젝트 개요
 
