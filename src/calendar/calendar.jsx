@@ -13,7 +13,7 @@ import { UserContext } from "../provider/UserProvider";
 
 const { Content, Sider } = Layout;
 
-const Calendar = () => {
+const Calendar = ({ isDashboard }) => {
   const { events, addOrUpdateEvent, deleteEvent, setUserId, fetchEvents } =
     useContext(EventContext); // 이벤트 추가/삭제 함수 사용
   const { selectedUser } = useContext(UserContext);
@@ -99,7 +99,93 @@ const Calendar = () => {
   return (
     <ConfigProvider theme={theme}>
       <Layout style={{ padding: "20px" }}>
-        <Sider
+        {isDashboard ? (
+          // 대시보드일 때 FullCalendar만 렌더링
+          <Content style={{ width: isDashboard ? "70%" : "100%" }}>
+            <FullCalendar
+              height="75vh"
+              plugins={[
+                dayGridPlugin,
+                timeGridPlugin,
+                interactionPlugin,
+                listPlugin,
+              ]}
+              initialView="dayGridMonth"
+              events={formattedEvents}
+            />
+            {/* 모달 창 */}
+            {/* <CalendarModal
+              visible={isModalVisible}
+              task={currentTask}
+              onCancel={handleCancel}
+              onSave={handleSave}
+              onDelete={handleDelete}
+            /> */}
+          </Content>
+        ) : (
+          // 대시보드가 아닐 때 전체 캘린더와 사이드바 렌더링
+          <>
+            <Sider
+              width={200}
+              style={{
+                background: theme.token.colorBgBase,
+                padding: "15px",
+                borderRadius: "4px",
+                color: theme.token.colorTextBase,
+              }}
+            >
+              <Typography.Title
+                level={5}
+                style={{ color: theme.token.colorTextBase }}
+              >
+                일정
+              </Typography.Title>
+              <List
+                dataSource={events}
+                renderItem={(event) => (
+                  <List.Item key={event.id}>
+                    <List.Item.Meta title={event.title} />
+                  </List.Item>
+                )}
+              />
+            </Sider>
+
+            <Layout
+              style={{
+                paddingLeft: "15px",
+                minWidth: "800px",
+                maxWidth: "800px",
+              }}
+            >
+              <Content style={{ background: theme.token.colorBgBase }}>
+                <FullCalendar
+                  key={formattedEvents.length} // key로 강제 렌더링 유도
+                  height="75vh"
+                  plugins={[
+                    dayGridPlugin,
+                    timeGridPlugin,
+                    interactionPlugin,
+                    listPlugin,
+                  ]}
+                  headerToolbar={{
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+                  }}
+                  initialView="dayGridMonth"
+                  editable={true}
+                  selectable={true}
+                  selectMirror={true}
+                  dayMaxEvents={true}
+                  events={formattedEvents}
+                  select={handleDateClick}
+                  eventClick={handleEventClick}
+                />
+              </Content>
+            </Layout>
+          </>
+        )}
+        {/* <Sider
           width={200}
           style={{
             background: theme.token.colorBgBase,
@@ -154,10 +240,10 @@ const Calendar = () => {
               events={formattedEvents} // 컨텍스트에서 불러온 이벤트
               select={handleDateClick}
               eventClick={handleEventClick}
-            />
+            /> */}
 
-            {/* 모달 창 */}
-            <CalendarModal
+        {/* 모달 창 */}
+        {/* <CalendarModal
               visible={isModalVisible}
               task={currentTask}
               onCancel={handleCancel}
@@ -165,7 +251,15 @@ const Calendar = () => {
               onDelete={handleDelete}
             />
           </Content>
-        </Layout>
+        </Layout> */}
+        {/* 모달 창 */}
+        <CalendarModal
+          visible={isModalVisible}
+          task={currentTask}
+          onCancel={handleCancel}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
       </Layout>
     </ConfigProvider>
   );

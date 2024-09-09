@@ -16,7 +16,8 @@ import { ConfigProvider } from "antd";
 import TaskEditModal from "./edit/Modal";
 import { ToDoContext } from "../provider/todoProvider";
 
-const TodoBoard = () => {
+const TodoBoard = ({ isDashboard }) => {
+  // isDashboard prop 받기
   const { theme } = useMode(); // 테마 가져오기
   const {
     todos = [], // 할 일 목록
@@ -82,6 +83,7 @@ const TodoBoard = () => {
     }
     setIsModalVisible(false); // 모달 닫기
   };
+
   const handleDeleteTask = (taskId) => {
     deleteTodo(taskId); // 할 일 삭제
     setIsModalVisible(false); // 모달 닫기
@@ -91,76 +93,83 @@ const TodoBoard = () => {
     setIsModalVisible(false); // 모달 닫기
   };
 
-  // 현재 드래그 중인 태스크를 찾기
   const activeDraggedTask = todos.find((task) => task.id === activeId);
+
+  // 대시보드에서 렌더링 시 "In Progress" 칼럼만 렌더링
+  const columnsToRender = isDashboard
+    ? ["IN_PROGRESS"] // 대시보드에서는 "In Progress" 칼럼만 렌더링
+    : ["PENDING", "IN_PROGRESS", "COMPLETED"]; // 전체 보드에서는 모든 상태 렌더링
 
   return (
     <ConfigProvider theme={theme}>
-      <TodoBoardContainer>
+      <TodoBoardContainer isDashboard={isDashboard}>
         <DndContext
           sensors={sensors}
           onDragStart={handleOnDragStart}
           onDragEnd={handleOnDragEnd}
         >
-          {/* To Do Column */}
-          <TodoColumn
-            id="todo"
-            title="To Do"
-            tasks={todos}
-            onAddCard={handleAddCard}
-          >
-            {todos
-              .filter((task) => task.status === "PENDING")
-              .map((task) => (
-                <TodoItem
-                  key={task.id}
-                  id={task.id}
-                  onClick={() => handleEditItem(task)}
-                >
-                  <TodoCard task={task} />
-                </TodoItem>
-              ))}
-          </TodoColumn>
+          {columnsToRender.includes("PENDING") && (
+            <TodoColumn
+              id="todo"
+              title="To Do"
+              tasks={todos.filter((task) => task.status === "PENDING")}
+              onAddCard={handleAddCard}
+            >
+              {todos
+                .filter((task) => task.status === "PENDING")
+                .map((task) => (
+                  <TodoItem
+                    key={task.id}
+                    id={task.id}
+                    onClick={() => handleEditItem(task)}
+                  >
+                    <TodoCard task={task} isDashboard={isDashboard} />
+                  </TodoItem>
+                ))}
+            </TodoColumn>
+          )}
 
-          {/* In Progress Column */}
-          <TodoColumn
-            id="inProgress"
-            title="In Progress"
-            tasks={todos}
-            onAddCard={handleAddCard}
-          >
-            {todos
-              .filter((task) => task.status === "IN_PROGRESS")
-              .map((task) => (
-                <TodoItem
-                  key={task.id}
-                  id={task.id}
-                  onClick={() => handleEditItem(task)}
-                >
-                  <TodoCard task={task} />
-                </TodoItem>
-              ))}
-          </TodoColumn>
+          {columnsToRender.includes("IN_PROGRESS") && (
+            <TodoColumn
+              id="inProgress"
+              title="In Progress"
+              tasks={todos.filter((task) => task.status === "IN_PROGRESS")}
+              onAddCard={handleAddCard}
+            >
+              {todos
+                .filter((task) => task.status === "IN_PROGRESS")
+                .map((task) => (
+                  <TodoItem
+                    key={task.id}
+                    id={task.id}
+                    onClick={() => handleEditItem(task)}
+                  >
+                    <TodoCard task={task} isDashboard={isDashboard} />
+                  </TodoItem>
+                ))}
+            </TodoColumn>
+          )}
 
-          {/* Done Column */}
-          <TodoColumn
-            id="done"
-            title="Done"
-            tasks={todos}
-            onAddCard={handleAddCard}
-          >
-            {todos
-              .filter((task) => task.status === "COMPLETED")
-              .map((task) => (
-                <TodoItem
-                  key={task.id}
-                  id={task.id}
-                  onClick={() => handleEditItem(task)}
-                >
-                  <TodoCard task={task} />
-                </TodoItem>
-              ))}
-          </TodoColumn>
+          {columnsToRender.includes("COMPLETED") && (
+            <TodoColumn
+              id="done"
+              title="Done"
+              tasks={todos.filter((task) => task.status === "COMPLETED")}
+              onAddCard={handleAddCard}
+            >
+              {todos
+                .filter((task) => task.status === "COMPLETED")
+                .map((task) => (
+                  <TodoItem
+                    key={task.id}
+                    id={task.id}
+                    onClick={() => handleEditItem(task)}
+                  >
+                    <TodoCard task={task} isDashboard={isDashboard} />
+                  </TodoItem>
+                ))}
+            </TodoColumn>
+          )}
 
           {/* DragOverlay: 드래그 중인 아이템을 표시 */}
           <DragOverlay>

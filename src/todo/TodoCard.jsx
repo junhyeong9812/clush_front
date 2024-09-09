@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "antd";
 import { useMode } from "../theme"; // 테마 가져오기
 
-export const TodoCard = ({ task }) => {
+export const TodoCard = ({ task, isDashboard }) => {
   const { theme } = useMode(); // 테마 가져오기
 
   return (
@@ -15,6 +15,8 @@ export const TodoCard = ({ task }) => {
       }}
     >
       <p>{task.description}</p> {/* 할 일의 설명을 보여줌 */}
+      {isDashboard && <p>Status: {task.status}</p>}{" "}
+      {/* 대시보드에서는 status 표시 */}
     </Card>
   );
 };
