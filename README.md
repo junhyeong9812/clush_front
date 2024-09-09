@@ -36,7 +36,7 @@
    ```
    git clone https://github.com/username/clush_frontend.git
    cd clush_frontend
-  ```
+   ```
 
 2. **패키지 설치**
 ```
